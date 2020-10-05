@@ -1,0 +1,128 @@
+<!DOCTYPE htm>
+<html>
+	<head>
+		<title>Random cube</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script src = "three.js" ></script>
+		<script> src = "ar.js" </script>
+		<!--<script> src = "arscript.js" </script> -->
+		<script> src = "threex-armarkercontrols.js" </script>
+		<script></script>
+		<script></script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			//setting up the camera to read the ar pattern
+
+//this class controls the position of the marker
+var markerControls = new THREEx.ArMarkerControls( arToolkitContext, camera, {
+  // size of the marker in meter
+  size: 1,
+  // type of marker - ['pattern', 'barcode', 'unknown' ]
+  type: "pattern",
+  // url of the pattern - IIF type='pattern'
+  patternUrl : THREEx.ArToolkitContext.baseURL + "pattern.patt",
+  // value of the barcode - IIF type='barcode'
+  barcodeValue: null,
+  // change matrix mode - [modelViewMatrix, cameraTransformMatrix]
+  changeMatrixMode: "modelViewMatrix",
+  // turn on/off camera smoothing
+  smooth: true,
+  // number of matrices to smooth tracking over, more = smoother but slower follow
+  smoothCount: 5,
+  // distance tolerance for smoothing, if smoothThreshold # of matrices are under tolerance, tracking will stay still
+  smoothTolerance: 0.01,
+  // threshold for smoothing, will keep still unless enough matrices are over tolerance
+  smoothThreshold: 2
+});
+
+var context = new THREEx.ArToolkitContext( arToolkitContext, camera, {
+  // the mode of detection - ['color', 'color_and_matrix', 'mono', 'mono_and_matrix']
+	detectionMode: 'momo and matrix',
+	// type of matrix code - valid iif detectionMode end with 'matrix' - [3x3, 3x3_HAMMING63, 3x3_PARITY65, 4x4, 4x4_BCH_13_9_3, 4x4_BCH_13_5_5]
+	matrixCodeType: '3x3',
+	// Pattern ratio for custom markers
+	patternRatio: 0.5,
+	// Labeling mode for markers - ['black_region', 'white_region']
+	// black_region: Black bordered markers on a white background, white_region: White bordered markers on a black background
+  labelingMode: 'black_region',
+  cameraParametersUrl: 'data/camera_para.dat'
+});
+
+var imagesource = new THREEx.ArToolkitSource ( camera, {
+	// type of source - ['webcam', 'image', 'video']
+	sourceType : 'webcam',
+	// url of the source - valid if sourceType = image|video
+	sourceUrl : null,
+	
+	// resolution of at which we initialize the source image
+	sourceWidth: 640,
+	sourceHeight: 480,
+	// resolution displayed for the source 
+	displayWidth: 640,
+	displayHeight: 480,
+});
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+            camera.position.z = 100;
+            
+            cubes = [];
+            friction = 0.94;
+            range = 50
+
+        for (var i = 0; i < 50; i++) {
+			var geometry = new THREE.BoxGeometry( 5, 5, 5 );
+			var material = new THREE.MeshPhongMaterial( { color: Math.random() * 0xfaf662, 
+			transparent: true, 
+			opacity: Math.random() } );
+			var cube = new THREE.Mesh( geometry, material );
+			cube.position.x = Math.random() * range - range / 2;
+            cube.position.y = Math.random() * range - range / 2;
+			cube.position.z = Math.random() * range - range / 2;
+            cube.vx = 0;
+            cube.vy = 0;
+			cube.vz = 0;
+            cubes.push( cube );
+			scene.add( cube );
+        }
+
+            var ambient = new THREE.AmbientLight( 0x404040 );
+            scene.add( ambient );
+
+            var directionalLight = new THREE.DirectionalLight( 0xfaf662, 2);
+			 directionalLight.position.x = 5;
+			 directionalLight.position.y = 20;
+			 directionalLight.position.z = 15;
+			 scene.add(directionalLight);
+
+        function draw( cube, i ) {
+            cube.vx += Math.random() * 0.2 - 0.1;
+			cube.vy += Math.random() * 0.2 - 0.1;
+			cube.vz += Math.random() * 0.2 - 0.1;
+			cube.position.x += cube.vx;
+            cube.position.y += cube.vy;
+			cube.position.z += cube.vz;
+			cube.position.x *= friction;
+            cube.position.y *= friction;
+			cube.position.z *= friction;
+	 }
+			var animate = function () {
+				requestAnimationFrame( animate );
+                cubes.forEach( draw );
+			
+
+				renderer.render( scene, camera );
+			};
+
+			animate();
+		</script>
+	</body>
+</html>
